@@ -67,7 +67,7 @@ A complete full-stack football analytics platform using **Next.js + TailwindCSS*
 │   ├── lib
 │   │   └── dummyData.js
 │   ├── public
-│   │   └── logo.svg
+│   │   └── logo.png
 │   ├── jsconfig.json
 │   ├── next.config.mjs
 │   ├── package.json
