@@ -74,9 +74,22 @@ Production-ready full-stack football analytics platform:
 │   ├── lib
 │   │   ├── api.js
 │   │   └── dummyData.js
-│   └── public/logo.png
+│   └── public/logo.svg
 └── README.md
 ```
+
+
+## Admin CMS upgrade
+- Global auth context at `frontend/context/AuthContext.js` with persistent session restore (`mda_token`), `login`, `logout`, and `fetchCurrentUser`.
+- Route guard component `frontend/components/ProtectedRoute.js` for role-based frontend protection.
+- New CMS routes:
+  - `/admin/dashboard`
+  - `/admin/posts`
+  - `/admin/posts/edit/[id]`
+  - `/admin/predictions`
+  - `/admin/predictions/edit/[id]`
+- Dashboard now includes KPI cards: total posts, total predictions, latest post, latest prediction.
+- Navbar now keeps session state globally and shows Dashboard + Logout for `admin`/`editor`.
 
 ## Backend API
 Base URL: `http://localhost:5000/api`

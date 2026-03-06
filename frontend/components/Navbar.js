@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useMemo } from 'react';
+import { useAuth } from '@/context/AuthContext';
 
 const baseLinks = [
   ['/', 'Home'],
@@ -14,25 +15,22 @@ const baseLinks = [
 
 export default function Navbar() {
   const pathname = usePathname();
-  const [role, setRole] = useState(null);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('mda_user');
-    if (saved) {
-      try {
-        setRole(JSON.parse(saved).role || null);
-      } catch {
-        setRole(null);
-      }
-    }
-  }, []);
+  const router = useRouter();
+  const { user, logout } = useAuth();
 
   const links = useMemo(() => {
-    if (role === 'admin' || role === 'editor') {
-      return [...baseLinks, ['/admin/dashboard', 'Admin']];
+    if (user?.role === 'admin' || user?.role === 'editor') {
+      return [...baseLinks, ['/admin/dashboard', 'Dashboard']];
     }
     return [...baseLinks, ['/admin/login', 'Login']];
-  }, [role]);
+  }, [user?.role]);
+
+  const handleLogout = () => {
+    // Explicitly remove token key as requested.
+    localStorage.removeItem('mda_token');
+    logout();
+    router.push('/');
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-background/85 backdrop-blur border-b border-white/10">
@@ -40,7 +38,7 @@ export default function Navbar() {
         <Link href="/" className="font-heading font-bold text-lg tracking-wide text-accent">
           MDA | Football Analysis
         </Link>
-        <div className="flex gap-2 md:gap-4 text-sm md:text-base">
+        <div className="flex items-center gap-2 md:gap-4 text-sm md:text-base">
           {links.map(([href, label]) => (
             <Link
               key={href}
@@ -50,6 +48,12 @@ export default function Navbar() {
               {label}
             </Link>
           ))}
+
+          {(user?.role === 'admin' || user?.role === 'editor') && (
+            <button onClick={handleLogout} className="px-2 py-1 rounded text-slate-200 hover:text-accent border border-white/20">
+              Logout
+            </button>
+          )}
         </div>
       </nav>
     </header>
