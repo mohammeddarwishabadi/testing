@@ -8,8 +8,16 @@ const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-heading' }
 const openSans = Open_Sans({ subsets: ['latin'], variable: '--font-body' });
 
 export const metadata = {
-  title: 'MDA | Football Analysis',
-  description: 'Football truth through data'
+  title: {
+    default: 'MDA | Football Analysis',
+    template: '%s | MDA | Football Analysis'
+  },
+  description: 'Football truth through data: match analysis, predictions, and visual insights.',
+  openGraph: {
+    title: 'MDA | Football Analysis',
+    description: 'Football truth through data: match analysis, predictions, and visual insights.',
+    type: 'website'
+  }
 };
 
 export default function RootLayout({ children }) {

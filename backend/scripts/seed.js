@@ -4,23 +4,24 @@ const mongoose = require('mongoose');
 const User = require('../src/models/User');
 const Post = require('../src/models/Post');
 const Prediction = require('../src/models/Prediction');
+const Comment = require('../src/models/Comment');
 
 const seed = async () => {
   await mongoose.connect(process.env.MONGO_URI);
 
-  await Promise.all([User.deleteMany(), Post.deleteMany(), Prediction.deleteMany()]);
+  await Promise.all([User.deleteMany(), Post.deleteMany(), Prediction.deleteMany(), Comment.deleteMany()]);
 
   const adminPassword = await bcrypt.hash('admin123', 10);
   const editorPassword = await bcrypt.hash('editor123', 10);
   const userPassword = await bcrypt.hash('user123', 10);
 
-  await User.insertMany([
+  const [admin, editor, user] = await User.insertMany([
     { email: 'admin@mda.com', password: adminPassword, role: 'admin' },
     { email: 'editor@mda.com', password: editorPassword, role: 'editor' },
     { email: 'user@mda.com', password: userPassword, role: 'user' }
   ]);
 
-  await Post.insertMany([
+  const [post] = await Post.insertMany([
     {
       title: 'Arsenal 2-1 Liverpool: Pressing Traps Won the Midfield',
       match: 'Premier League - Matchday 24',
@@ -31,7 +32,7 @@ const seed = async () => {
       possession: '56% - 44%',
       analysis_text: 'Arsenal forced six high turnovers in key zones.',
       charts: ['xg-bar.png'],
-      imageUrl: '/uploads/sample-analysis.png'
+      imageUrl: '/uploads/posts/2026-01/sample-analysis.png'
     }
   ]);
 
@@ -43,9 +44,15 @@ const seed = async () => {
       expected_goals: [2.1, 1.0],
       confidence: 82,
       charts: ['probability-distribution.png'],
-      imageUrl: '/uploads/sample-prediction.png'
+      imageUrl: '/uploads/predictions/2026-01/sample-prediction.png'
     }
   ]);
+
+  await Comment.create({
+    user: user._id,
+    post: post._id,
+    content: 'Great breakdown. The midfield press was the turning point.'
+  });
 
   console.log('Seed complete: admin@mda.com/admin123, editor@mda.com/editor123, user@mda.com/user123');
   await mongoose.disconnect();

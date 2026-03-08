@@ -41,8 +41,10 @@ function DashboardContent() {
   const [stats, setStats] = useState({
     totalPosts: 0,
     totalPredictions: 0,
+    totalUsers: 0,
     latestPost: '-',
-    latestPrediction: '-'
+    latestPrediction: '-',
+    recentActivity: []
   });
   const [statsLoading, setStatsLoading] = useState(true);
 
@@ -59,18 +61,14 @@ function DashboardContent() {
     setError('');
 
     try {
-      const [postsFull, predictionsFull, latestPostRes, latestPredictionRes] = await Promise.all([
-        apiRequest('/posts?page=1&limit=1'),
-        apiRequest('/predictions?page=1&limit=1'),
-        apiRequest('/posts?page=1&limit=1'),
-        apiRequest('/predictions?page=1&limit=1')
-      ]);
-
+      const payload = await apiRequest('/admin/stats');
       setStats({
-        totalPosts: postsFull.pagination?.total || 0,
-        totalPredictions: predictionsFull.pagination?.total || 0,
-        latestPost: latestPostRes.data?.[0]?.title || '-',
-        latestPrediction: latestPredictionRes.data?.[0]?.match || '-'
+        totalPosts: payload.totalPosts || 0,
+        totalPredictions: payload.totalPredictions || 0,
+        totalUsers: payload.totalUsers || 0,
+        latestPost: payload.latestPost || '-',
+        latestPrediction: payload.latestPrediction || '-',
+        recentActivity: payload.recentActivity || []
       });
     } catch (err) {
       setError(err.message || 'Failed to load dashboard statistics.');
@@ -162,23 +160,27 @@ function DashboardContent() {
       <ErrorBanner message={error} />
       {status && <p className="text-accent">{status}</p>}
 
-      <section className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="card">
-          <p className="text-muted text-sm">Total Posts</p>
-          <p className="text-3xl font-heading font-bold">{statsLoading ? '...' : stats.totalPosts}</p>
-        </div>
-        <div className="card">
-          <p className="text-muted text-sm">Total Predictions</p>
-          <p className="text-3xl font-heading font-bold">{statsLoading ? '...' : stats.totalPredictions}</p>
-        </div>
-        <div className="card">
-          <p className="text-muted text-sm">Latest Post</p>
-          <p className="font-semibold">{statsLoading ? 'Loading...' : stats.latestPost}</p>
-        </div>
-        <div className="card">
-          <p className="text-muted text-sm">Latest Prediction</p>
-          <p className="font-semibold">{statsLoading ? 'Loading...' : stats.latestPrediction}</p>
-        </div>
+      <section className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <StatsCard label="Total Posts" value={stats.totalPosts} loading={statsLoading} />
+        <StatsCard label="Total Predictions" value={stats.totalPredictions} loading={statsLoading} />
+        <StatsCard label="Total Users" value={stats.totalUsers} loading={statsLoading} />
+        <StatsCard label="Latest Post" value={stats.latestPost} loading={statsLoading} wide />
+        <StatsCard label="Latest Prediction" value={stats.latestPrediction} loading={statsLoading} wide />
+      </section>
+
+      <section className="card">
+        <h2 className="font-heading text-xl font-bold mb-3">Recent Activity</h2>
+        {statsLoading ? <p className="text-muted">Loading activity...</p> : (
+          <ul className="space-y-2">
+            {stats.recentActivity.length === 0 && <li className="text-muted">No recent activity.</li>}
+            {stats.recentActivity.map((item, idx) => (
+              <li key={`${item.type}-${idx}`} className="text-sm">
+                <span className="text-accent uppercase mr-2">{item.type}</span>
+                {item.label}
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section className="card flex flex-wrap gap-3 items-center">
@@ -211,6 +213,15 @@ function DashboardContent() {
         <input className="bg-black/30 border border-white/20 rounded p-3 md:col-span-2" type="file" accept="image/*" onChange={(e) => setPredictionImage(e.target.files?.[0] || null)} />
         <button disabled={submitting} className="bg-accent text-black font-semibold px-4 py-2 rounded md:col-span-2 disabled:opacity-50">{submitting ? 'Saving...' : 'Create Prediction'}</button>
       </form>
+    </div>
+  );
+}
+
+function StatsCard({ label, value, loading, wide = false }) {
+  return (
+    <div className={`card ${wide ? 'lg:col-span-2' : ''}`}>
+      <p className="text-muted text-sm">{label}</p>
+      <p className="text-xl font-heading font-bold truncate">{loading ? '...' : value}</p>
     </div>
   );
 }

@@ -91,6 +91,17 @@ Production-ready full-stack football analytics platform:
 - Dashboard now includes KPI cards: total posts, total predictions, latest post, latest prediction.
 - Navbar now keeps session state globally and shows Dashboard + Logout for `admin`/`editor`.
 
+
+## Production hardening
+- Security middleware in Express: `helmet`, `express-rate-limit`, `express-mongo-sanitize`, `xss-clean`.
+- Upload hardening: MIME + extension checks, size limits, UUID filenames, structured upload folders.
+- Read caching (60s) for heavy endpoints (`/posts`, `/posts/:id`, `/predictions`) with Redis auto-detection and in-memory fallback.
+- Blog search endpoint: `GET /posts/search?q=keyword` using Mongo text index.
+- Comments system:
+  - `GET /posts/:id/comments`
+  - `POST /posts/:id/comments` (authenticated)
+- Admin analytics endpoint: `GET /admin/stats` (admin/editor).
+
 ## Backend API
 Base URL: `http://localhost:5000/api`
 
@@ -100,7 +111,10 @@ Base URL: `http://localhost:5000/api`
 
 ### Posts
 - `GET /posts?page=1&limit=10`
+- `GET /posts/search?q=keyword`
 - `GET /posts/:id`
+- `GET /posts/:id/comments`
+- `POST /posts/:id/comments` (protected)
 - `POST /posts` (protected: `admin`, `editor`)
 - `PUT /posts/:id` (protected: `admin`, `editor`)
 - `DELETE /posts/:id` (protected: `admin`)
@@ -115,6 +129,9 @@ Base URL: `http://localhost:5000/api`
 ### Uploads
 - `POST /upload` (protected: `admin`, `editor`, multipart `image`)
 - Files are served from `/uploads/<filename>`
+
+### Admin
+- `GET /admin/stats` (protected: `admin`, `editor`)
 
 ## Collections
 ### Posts

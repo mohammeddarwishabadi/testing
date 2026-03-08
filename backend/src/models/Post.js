@@ -16,4 +16,7 @@ const postSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Enables fast keyword search for blog post discovery.
+postSchema.index({ title: 'text', analysis_text: 'text' });
+
 module.exports = mongoose.model('Post', postSchema);

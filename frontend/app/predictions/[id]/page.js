@@ -4,17 +4,35 @@ import { apiBase, buildImageUrl } from '@/lib/api';
 async function getPrediction(id) {
   const res = await fetch(`${apiBase}/predictions/${id}`, { cache: 'no-store' });
   if (!res.ok) {
-    return { error: 'Prediction not found or currently unavailable.' };
+    return null;
   }
-  const prediction = await res.json();
-  return { prediction };
+  return res.json();
+}
+
+export async function generateMetadata({ params }) {
+  const prediction = await getPrediction(params.id);
+  const title = prediction ? `${prediction.match} Prediction | MDA` : 'Prediction Not Found | MDA';
+  const description = prediction
+    ? `Confidence ${prediction.confidence}% · Expected goals ${prediction.expected_goals?.[0]}-${prediction.expected_goals?.[1]}`
+    : 'Data-driven football predictions from MDA.';
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'article',
+      images: prediction?.imageUrl ? [buildImageUrl(prediction.imageUrl)] : []
+    }
+  };
 }
 
 export default async function SinglePredictionPage({ params }) {
-  const { prediction, error } = await getPrediction(params.id);
+  const prediction = await getPrediction(params.id);
 
-  if (error) {
-    return <ErrorBanner message={error} />;
+  if (!prediction) {
+    return <ErrorBanner message="Prediction not found or currently unavailable." />;
   }
 
   const [home = 0, draw = 0, away = 0] = prediction.win_probability || [];
