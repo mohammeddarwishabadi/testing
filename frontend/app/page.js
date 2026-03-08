@@ -44,7 +44,7 @@ export default function HomePage() {
   return (
     <div className="space-y-10">
       <section className="card flex flex-col md:flex-row items-center gap-8 shadow-glow">
-        <Image src="/logo.svg" alt="MDA Logo" width={180} height={180} className="rounded-xl border border-accent/30" />
+        <Image src="/logo.png" alt="MDA Logo" width={180} height={180} className="rounded-xl border border-accent/30" />
         <div>
           <PageIntro title="MDA | Football Analysis" subtitle="Football truth through data" />
           <Link href="/analysis" className="inline-block bg-accent text-black font-bold px-5 py-3 rounded-lg hover:opacity-90 transition">
