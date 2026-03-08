@@ -20,8 +20,8 @@ export function AuthProvider({ children }) {
 
     try {
       const payload = await apiRequest('/auth/me', { token: authToken });
-      setUser(payload.user || null);
-      return payload.user || null;
+      setUser(payload.data || null);
+      return payload.data || null;
     } catch {
       localStorage.removeItem('mda_token');
       setToken(null);
@@ -31,12 +31,13 @@ export function AuthProvider({ children }) {
   }, [token]);
 
   const applyAuthPayload = useCallback((payload) => {
-    if (payload?.token) {
-      localStorage.setItem('mda_token', payload.token);
-      setToken(payload.token);
+    const authData = payload?.data || {};
+    if (authData?.token) {
+      localStorage.setItem('mda_token', authData.token);
+      setToken(authData.token);
     }
-    setUser(payload?.user || null);
-    return payload?.user || null;
+    setUser(authData?.user || null);
+    return authData?.user || null;
   }, []);
 
   const login = useCallback(async ({ email, password }) => {

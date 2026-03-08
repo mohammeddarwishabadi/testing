@@ -8,14 +8,14 @@ const protect = asyncHandler(async (req, res, next) => {
     : null;
 
   if (!token) {
-    return res.status(401).json({ message: 'Unauthorized: token missing' });
+    return res.status(401).json({ success: false, message: 'Unauthorized: token missing' });
   }
 
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
   const user = await User.findById(decoded.id).select('-password');
 
   if (!user) {
-    return res.status(401).json({ message: 'Unauthorized: user not found' });
+    return res.status(401).json({ success: false, message: 'Unauthorized: user not found' });
   }
 
   req.user = user;

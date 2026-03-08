@@ -41,7 +41,8 @@ function EditPostForm() {
     const load = async () => {
       setLoading(true);
       try {
-        const post = await apiRequest(`/posts/${id}`);
+        const payload = await apiRequest(`/posts/${id}`);
+        const post = payload.data;
         setForm({
           title: post.title || '',
           match: post.match || '',

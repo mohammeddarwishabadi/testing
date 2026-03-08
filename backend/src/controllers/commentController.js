@@ -2,25 +2,26 @@ const Comment = require('../models/Comment');
 const Post = require('../models/Post');
 const asyncHandler = require('../utils/asyncHandler');
 const { clearCacheByPrefix } = require('../services/cacheService');
+const { sendSuccess, sendError } = require('../utils/response');
 
 exports.getCommentsByPost = asyncHandler(async (req, res) => {
   const comments = await Comment.find({ post: req.params.id })
-    .populate('user', 'email role')
+    .populate('user', 'email role subscription')
     .sort({ createdAt: -1 });
 
-  res.json({ data: comments });
+  return sendSuccess(res, comments, 'Comments fetched');
 });
 
 exports.createComment = asyncHandler(async (req, res) => {
   const { content } = req.body;
 
   if (!content || !content.trim()) {
-    return res.status(400).json({ message: 'Comment content is required' });
+    return sendError(res, 'Comment content is required', 400);
   }
 
   const post = await Post.findById(req.params.id).select('_id');
   if (!post) {
-    return res.status(404).json({ message: 'Post not found' });
+    return sendError(res, 'Post not found', 404);
   }
 
   const comment = await Comment.create({
@@ -31,5 +32,5 @@ exports.createComment = asyncHandler(async (req, res) => {
 
   await clearCacheByPrefix('posts');
 
-  res.status(201).json(comment);
+  return sendSuccess(res, comment, 'Comment added', 201);
 });

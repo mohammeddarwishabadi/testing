@@ -38,7 +38,8 @@ function EditPredictionForm() {
     const load = async () => {
       setLoading(true);
       try {
-        const prediction = await apiRequest(`/predictions/${id}`);
+        const payload = await apiRequest(`/predictions/${id}`);
+        const prediction = payload.data;
         setForm({
           match: prediction.match || '',
           teams: (prediction.teams || []).join(', '),

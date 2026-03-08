@@ -45,7 +45,7 @@ app.use(xssClean());
 app.use('/api', apiLimiter);
 app.use('/uploads', express.static(uploadDir));
 
-app.get('/api/health', (_req, res) => res.json({ ok: true }));
+app.get('/api/health', (_req, res) => res.json({ success: true, data: { ok: true }, message: 'API healthy' }));
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth/register', loginLimiter);
 app.use('/api/auth', authRoutes);
@@ -55,7 +55,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/admin', adminRoutes);
 
 app.use((_req, res) => {
-  res.status(404).json({ message: 'Route not found' });
+  res.status(404).json({ success: false, message: 'Route not found' });
 });
 
 app.use(errorHandler);

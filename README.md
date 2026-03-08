@@ -105,13 +105,17 @@ Production-ready full-stack football analytics platform:
 ## Backend API
 Base URL: `http://localhost:5000/api`
 
+All endpoints now return a standard envelope:
+- Success: `{ success: true, message, data, meta? }`
+- Error: `{ success: false, message }`
+
 ### Auth
 - `POST /auth/register`
 - `POST /auth/login`
 - `GET /auth/me` (protected)
 
 ### Posts
-- `GET /posts?page=1&limit=10`
+- `GET /posts?page=1&limit=10&search=arsenal`
 - `GET /posts/search?q=keyword`
 - `GET /posts/:id`
 - `GET /posts/:id/comments`

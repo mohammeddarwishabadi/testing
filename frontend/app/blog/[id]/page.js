@@ -1,13 +1,15 @@
 import ChartSection from '@/components/ChartSection';
 import ErrorBanner from '@/components/ErrorBanner';
 import MatchStatsCard from '@/components/MatchStatsCard';
+import MatchStatsCharts from '@/components/MatchStatsCharts';
 import PostComments from '@/components/PostComments';
 import { apiBase, buildImageUrl } from '@/lib/api';
 
 async function fetchPost(id) {
   const res = await fetch(`${apiBase}/posts/${id}`, { cache: 'no-store' });
   if (!res.ok) return null;
-  return res.json();
+  const payload = await res.json();
+  return payload?.data || null;
 }
 
 export async function generateMetadata({ params }) {
@@ -42,10 +44,7 @@ export default async function SinglePostPage({ params }) {
     description: post.analysis_text,
     datePublished: post.createdAt,
     image: post.imageUrl ? [buildImageUrl(post.imageUrl)] : [],
-    author: {
-      '@type': 'Organization',
-      name: 'MDA | Football Analysis'
-    }
+    author: { '@type': 'Organization', name: 'MDA | Football Analysis' }
   };
 
   return (
@@ -61,6 +60,7 @@ export default async function SinglePostPage({ params }) {
       </div>
 
       <MatchStatsCard post={post} />
+      <MatchStatsCharts post={post} />
 
       <section className="card space-y-3">
         <h2 className="font-heading text-2xl font-bold">Technical Fields</h2>

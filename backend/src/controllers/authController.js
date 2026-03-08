@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const asyncHandler = require('../utils/asyncHandler');
+const { sendError, sendSuccess } = require('../utils/response');
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -26,15 +27,15 @@ exports.register = asyncHandler(async (req, res) => {
   const { username, firstname, lastname, email, password } = req.body;
 
   if (!username || !firstname || !lastname || !email || !password) {
-    return res.status(400).json({ message: 'Username, firstname, lastname, email and password are required' });
+    return sendError(res, 'Username, firstname, lastname, email and password are required', 400);
   }
 
   if (!emailRegex.test(email)) {
-    return res.status(400).json({ message: 'Invalid email format' });
+    return sendError(res, 'Invalid email format', 400);
   }
 
   if (password.length < 8) {
-    return res.status(400).json({ message: 'Password must be at least 8 characters' });
+    return sendError(res, 'Password must be at least 8 characters', 400);
   }
 
   const [emailExists, usernameExists] = await Promise.all([
@@ -42,8 +43,8 @@ exports.register = asyncHandler(async (req, res) => {
     User.findOne({ username: username.trim().toLowerCase() })
   ]);
 
-  if (emailExists) return res.status(409).json({ message: 'Email already registered' });
-  if (usernameExists) return res.status(409).json({ message: 'Username already taken' });
+  if (emailExists) return sendError(res, 'Email already registered', 409);
+  if (usernameExists) return sendError(res, 'Username already taken', 409);
 
   const hash = await bcrypt.hash(password, 12);
 
@@ -58,26 +59,26 @@ exports.register = asyncHandler(async (req, res) => {
   });
 
   const token = signToken(user);
-  return res.status(201).json({ token, user: toPublicUser(user) });
+  return sendSuccess(res, { token, user: toPublicUser(user) }, 'Registration successful', 201);
 });
 
 exports.login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(400).json({ message: 'Email and password are required' });
+    return sendError(res, 'Email and password are required', 400);
   }
 
   const user = await User.findOne({ email: email.toLowerCase() });
-  if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+  if (!user) return sendError(res, 'Invalid credentials', 401);
 
   const valid = await bcrypt.compare(password, user.password);
-  if (!valid) return res.status(401).json({ message: 'Invalid credentials' });
+  if (!valid) return sendError(res, 'Invalid credentials', 401);
 
   const token = signToken(user);
-  return res.json({ token, user: toPublicUser(user) });
+  return sendSuccess(res, { token, user: toPublicUser(user) }, 'Login successful');
 });
 
 exports.me = asyncHandler(async (req, res) => {
-  return res.json({ user: toPublicUser(req.user) });
+  return sendSuccess(res, toPublicUser(req.user), 'Current user fetched');
 });

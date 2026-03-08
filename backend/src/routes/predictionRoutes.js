@@ -17,9 +17,12 @@ const router = express.Router();
 router.get('/', withCache('predictions', 60 * 1000), getPredictions);
 router.get('/advanced/premium-feed', protect, requirePremium, (_req, res) => {
   res.json({
-    feature: 'advanced-predictions',
+    success: true,
     message: 'Premium insights unlocked',
-    indicators: ['form-adjusted xG', 'fatigue model', 'schedule pressure index']
+    data: {
+      feature: 'advanced-predictions',
+      indicators: ['form-adjusted xG', 'fatigue model', 'schedule pressure index']
+    }
   });
 });
 router.get('/:id', getPredictionById);

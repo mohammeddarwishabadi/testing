@@ -5,6 +5,7 @@ import PageIntro from '@/components/PageIntro';
 import PostCard from '@/components/PostCard';
 import Pagination from '@/components/Pagination';
 import ErrorBanner from '@/components/ErrorBanner';
+import SkeletonCard from '@/components/SkeletonCard';
 import { apiRequest } from '@/lib/api';
 
 export default function BlogPage() {
@@ -26,7 +27,7 @@ export default function BlogPage() {
       } else {
         const payload = await apiRequest(`/posts?page=${page}&limit=6`);
         setPosts(payload.data || []);
-        setPagination(payload.pagination || { currentPage: 1, totalPages: 1 });
+        setPagination(payload.meta?.pagination || { currentPage: 1, totalPages: 1 });
       }
     } catch (err) {
       setError(err.message || 'Unexpected error while loading posts.');
@@ -51,11 +52,9 @@ export default function BlogPage() {
         />
       </div>
       <ErrorBanner message={error} />
-      {loading ? <p className="text-muted">Loading posts...</p> : (
-        <div className="grid md:grid-cols-2 gap-5">
-          {posts.map((post) => <PostCard key={post._id} post={post} />)}
-        </div>
-      )}
+      <div className="grid md:grid-cols-2 gap-5">
+        {loading ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />) : posts.map((post) => <PostCard key={post._id} post={post} />)}
+      </div>
       {!query.trim() && (
         <Pagination
           page={pagination.currentPage || pagination.page || 1}

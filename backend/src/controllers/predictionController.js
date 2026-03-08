@@ -1,6 +1,7 @@
 const Prediction = require('../models/Prediction');
 const asyncHandler = require('../utils/asyncHandler');
 const { clearCacheByPrefix } = require('../services/cacheService');
+const { sendSuccess, sendError } = require('../utils/response');
 
 exports.getPredictions = asyncHandler(async (req, res) => {
   const page = Math.max(Number.parseInt(req.query.page || '1', 10), 1);
@@ -14,24 +15,15 @@ exports.getPredictions = asyncHandler(async (req, res) => {
 
   const totalPages = Math.ceil(totalItems / limit) || 1;
 
-  res.json({
-    data: predictions,
-    pagination: {
-      totalPages,
-      currentPage: page,
-      totalItems,
-      // backward-compatible keys
-      page,
-      limit,
-      total: totalItems
-    }
+  return sendSuccess(res, predictions, 'Predictions fetched', 200, {
+    pagination: { totalPages, currentPage: page, totalItems, page, limit, total: totalItems }
   });
 });
 
 exports.getPredictionById = asyncHandler(async (req, res) => {
   const prediction = await Prediction.findById(req.params.id);
-  if (!prediction) return res.status(404).json({ message: 'Prediction not found' });
-  res.json(prediction);
+  if (!prediction) return sendError(res, 'Prediction not found', 404);
+  return sendSuccess(res, prediction, 'Prediction fetched');
 });
 
 exports.createPrediction = asyncHandler(async (req, res) => {
@@ -42,7 +34,7 @@ exports.createPrediction = asyncHandler(async (req, res) => {
   const prediction = await Prediction.create(payload);
 
   await clearCacheByPrefix('predictions');
-  res.status(201).json(prediction);
+  return sendSuccess(res, prediction, 'Prediction created successfully', 201);
 });
 
 exports.updatePrediction = asyncHandler(async (req, res) => {
@@ -52,16 +44,16 @@ exports.updatePrediction = asyncHandler(async (req, res) => {
   }
 
   const prediction = await Prediction.findByIdAndUpdate(req.params.id, payload, { new: true });
-  if (!prediction) return res.status(404).json({ message: 'Prediction not found' });
+  if (!prediction) return sendError(res, 'Prediction not found', 404);
 
   await clearCacheByPrefix('predictions');
-  res.json(prediction);
+  return sendSuccess(res, prediction, 'Prediction updated successfully');
 });
 
 exports.deletePrediction = asyncHandler(async (req, res) => {
   const prediction = await Prediction.findByIdAndDelete(req.params.id);
-  if (!prediction) return res.status(404).json({ message: 'Prediction not found' });
+  if (!prediction) return sendError(res, 'Prediction not found', 404);
 
   await clearCacheByPrefix('predictions');
-  res.json({ message: 'Prediction deleted' });
+  return sendSuccess(res, { id: req.params.id }, 'Prediction deleted successfully');
 });

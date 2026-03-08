@@ -3,10 +3,9 @@ import { apiBase, buildImageUrl } from '@/lib/api';
 
 async function getPrediction(id) {
   const res = await fetch(`${apiBase}/predictions/${id}`, { cache: 'no-store' });
-  if (!res.ok) {
-    return null;
-  }
-  return res.json();
+  if (!res.ok) return null;
+  const payload = await res.json();
+  return payload?.data || null;
 }
 
 export async function generateMetadata({ params }) {
